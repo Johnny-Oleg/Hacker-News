@@ -6,8 +6,6 @@ import classNames from 'classnames';
 
 import './App.css';
 
-//const url = 'https://hn.algolia.com/api/v1/search?query=redux&page=';
-
 const DEFAULT_QUERY = 'redux';
 const DEFAULT_HPP = '100';
 
@@ -29,13 +27,23 @@ const smallColumn = {
   width: '10%',
 };
 
-//const isSearched = searchTerm => item => item.title.toLowerCase().includes(searchTerm.toLowerCase());
 const SORTS = {
   NONE: list => list,
   TITLE: list => sortBy(list, 'title'),
   AUTHOR: list => sortBy(list, 'author'),
   COMMENTS: list => sortBy(list, 'num_comments').reverse(),
   POINTS: list => sortBy(list, 'points').reverse(),
+};
+
+const updateSearchTopStoriesState = (hits, page) => prevState => {
+  const { searchKey, results } = prevState;
+  const oldHits = results && results[searchKey] ? results[searchKey].hits : [];
+  const updatedHits = [ ...oldHits,...hits];
+
+  return {
+    results: {...results, [searchKey]: { hits: updatedHits, page }},
+    isLoading: false
+  };
 };
 
 class App extends Component {
@@ -66,15 +74,8 @@ class App extends Component {
 
   setSearchTopStories(result) {
     const { hits, page } = result;
-    const { searchKey, results } = this.state;
-
-    const oldHits = results && results[searchKey] ? results[searchKey].hits : [];
-    const updatedHits = [ ...oldHits, ...hits ];
-
-    this.setState({ 
-      results: { ...results, [searchKey]: { hits: updatedHits, page } }, 
-      isLoading: false
-    });  
+    
+    this.setState(updateSearchTopStoriesState(hits, page));
   }
 
   fetchSearchTopStories(searchTerm, page = 0) { 
@@ -130,7 +131,7 @@ class App extends Component {
     const list = (results && results[searchKey] && results[searchKey].hits) || [];
     
     if (error) {
-      return <p>Что-то произошло не так.</p>;
+      return <p>Something went wrong.</p>;
     }
 
     return (
@@ -141,7 +142,7 @@ class App extends Component {
             onChange={this.onSearchChange}
             onSubmit={this.onSearchSubmit}
           > 
-            Поиск
+            Search
           </Search>
         </div>    
         { error
@@ -158,7 +159,7 @@ class App extends Component {
             isLoading={isLoading}
             onClick={() => this.fetchSearchTopStories(searchKey, page + 1)} 
           >
-            Больше историй
+            More stories
           </ButtonWithLoading>
         </div>
       </div> 
@@ -227,26 +228,26 @@ class Table extends Component {
         <div className="table-header"> 
           <span style={largeColumn}>
             <Sort sortKey={'TITLE'} onSort={this.onSort} activeSortKey={sortKey}> 
-              Заголовок
+              Title
             </Sort>
           </span>
           <span style={midColumn}> 
             <Sort sortKey={'AUTHOR'} onSort={this.onSort} activeSortKey={sortKey}>
-              Автор
+              Author
             </Sort>
           </span>
           <span style={smallColumn}>
             <Sort sortKey={'COMMENTS'} onSort={this.onSort} activeSortKey={sortKey}>
-              Комментарии
+              Comments
             </Sort>
           </span>
           <span style={smallColumn}> 
             <Sort sortKey={'POINTS'} onSort={this.onSort} activeSortKey={sortKey}>
-              Очки 
+              Points 
             </Sort>
           </span>
           <span style={smallColumn}>
-            Архив
+            Archive
           </span>
         </div>
         {reverseSortedList.map(item =>
@@ -301,7 +302,6 @@ const Sort = ({ sortKey, activeSortKey, onSort, children }) => {
   );  
 };
 
-
 const Button = ({ onClick, className='', children }) => 
   <button onClick={onClick} className={className} type="button">
     {children}
@@ -317,34 +317,12 @@ Button.defaultProps = {
   className: '',
 };
 
-const Loading = () => <div>Загрузка ...</div>
+const Loading = () => <div>Loading ...</div>
 
 const withLoading = (Component) => ({ isLoading, ...rest }) => 
   isLoading ? <Loading /> : <Component { ...rest } />;
 
 const ButtonWithLoading = withLoading(Button);
-
-//? =============================== 
-
-// class ExplainBindingsComponent extends Component {
-//   constructor() {
-//     super();
-    
-//     this.onClickMe = this.onClickMe.bind(this);
-//   }
-
-//   onClickMe() {
-//     console.log(this);
-//   }
-
-//   render() {
-//     return (
-//       <button onClick={this.onClickMe} type="button">
-//         Нажми на меня
-//       </button>
-//     );
-//   }
-// }
 
 export default App;
 
@@ -353,8 +331,3 @@ export {
   Search,
   Table, 
 };
-
-
-// let f = x => x + 3;
-// let g = (func, x) => func(x) * func(x);
-// console.log(g(f, 7));
