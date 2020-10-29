@@ -49,36 +49,43 @@ const updateSearchTopStoriesState = (hits, page) => prevState => {
 class App extends Component {
   _isMounted = false;
 
-  constructor(props) {
-    super(props);
+  // constructor(props) {
+  //   super(props);
 
-    this.state = { 
+  //   this.state = { 
+  //     results: null,
+  //     searchKey: '',
+  //     searchTerm: DEFAULT_QUERY,
+  //     error: null,
+  //     isLoading: false,
+  //   };
+
+  //   this.needsToSearchTopStories = this.needsToSearchTopStories.bind(this);
+  //   this.setSearchTopStories = this.setSearchTopStories.bind(this);
+  //   this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this);
+  //   this.onSearchChange = this.onSearchChange.bind(this);
+  //   this.onSearchSubmit = this.onSearchSubmit.bind(this);
+  //   this.onDismiss = this.onDismiss.bind(this);
+  // }
+  state = { 
       results: null,
       searchKey: '',
       searchTerm: DEFAULT_QUERY,
       error: null,
       isLoading: false,
-    };
+  };
 
-    this.needsToSearchTopStories = this.needsToSearchTopStories.bind(this);
-    this.setSearchTopStories = this.setSearchTopStories.bind(this);
-    this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this);
-    this.onSearchChange = this.onSearchChange.bind(this);
-    this.onSearchSubmit = this.onSearchSubmit.bind(this);
-    this.onDismiss = this.onDismiss.bind(this);
-  }
-
-  needsToSearchTopStories(searchTerm) { 
+  needsToSearchTopStories = searchTerm => { 
     return !this.state.results[searchTerm];
   }
 
-  setSearchTopStories(result) {
+  setSearchTopStories = result => {
     const { hits, page } = result;
     
     this.setState(updateSearchTopStoriesState(hits, page));
   }
 
-  fetchSearchTopStories(searchTerm, page = 0) { 
+  fetchSearchTopStories = (searchTerm, page = 0) => { 
     this.setState({ isLoading: true });
   
     axios(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAULT_HPP}
@@ -87,7 +94,7 @@ class App extends Component {
       .catch(error => this._isMounted && this.setState({ error }));  
   }
 
-  componentDidMount() {
+  componentDidMount = () => {
     this._isMounted = true;
     
     const { searchTerm } = this.state;
@@ -96,15 +103,15 @@ class App extends Component {
     this.fetchSearchTopStories(searchTerm);
   }
 
-  componentWillUnmount() { 
+  componentWillUnmount = () => { 
     this._isMounted = false;
   }
 
-  onSearchChange(e) {
+  onSearchChange = e => {
     this.setState({ searchTerm: e.target.value });
   }
 
-  onSearchSubmit(e) {
+  onSearchSubmit = e => {
     const { searchTerm } = this.state;
     this.setState({ searchKey: searchTerm });
 
@@ -115,7 +122,7 @@ class App extends Component {
     e.preventDefault();
   }
 
-  onDismiss(id) {
+  onDismiss = id => {
     const { searchKey, results } = this.state; 
     const { hits, page } = results[searchKey];
 
@@ -168,7 +175,7 @@ class App extends Component {
 }
 
 class Search extends Component {
-  componentDidMount() {
+  componentDidMount = () => {
     if (this.input) {
     this.input.focus(); }
   }
@@ -200,17 +207,21 @@ Search.propTypes = {
 }  
 
 class Table extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      sortKey: 'NONE',
-      isSortReverse: false,
-    }; 
+  // constructor(props) {
+  //   super(props);
+  //   this.state = {
+  //     sortKey: 'NONE',
+  //     isSortReverse: false,
+  //   }; 
 
-    this.onSort = this.onSort.bind(this);
-  }
+  //   this.onSort = this.onSort.bind(this);
+  // }
+  state = {
+    sortKey: 'NONE',
+    isSortReverse: false,
+  }; 
 
-  onSort(sortKey) {
+  onSort = sortKey => {
     const isSortReverse = this.state.sortKey === sortKey && !this.state.isSortReverse;
 
     this.setState({ sortKey, isSortReverse });  
@@ -266,7 +277,7 @@ class Table extends Component {
             </span> 
             <span style={smallColumn}>
               <Button onClick={() => onDismiss(item.objectID)} className="button-inline"> 
-                Отбросить
+                Dismiss
               </Button>
             </span>
           </div> 
@@ -319,7 +330,7 @@ Button.defaultProps = {
 
 const Loading = () => <div>Loading ...</div>
 
-const withLoading = (Component) => ({ isLoading, ...rest }) => 
+const withLoading = Component => ({ isLoading, ...rest }) => 
   isLoading ? <Loading /> : <Component { ...rest } />;
 
 const ButtonWithLoading = withLoading(Button);
